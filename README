@@ -9,12 +9,18 @@ SYNOPSIS
  
      package MyModule;
      use Class::Member::GLOB qw/member_A member_B/;
+ 
+     or
+ 
+     package MyModule;
+     use Class::Member qw/member_A member_B/;
+ 
+     or
+ 
+     package MyModule;
+     use Class::Member::Dynamic qw/member_A member_B/;
 
 DESCRIPTION
-    "Class::Member" is not a useable perl module by its own. It is a set of
-    2 modules to make access to class member variables easier and less error
-    prone.
-
     Perl class instances are mostly blessed HASHes or GLOBs and store member
     variables either as "$self->{membername}" or "${*$self}{membername}"
     respectively.
@@ -37,13 +43,27 @@ DESCRIPTION
 
      $self->member_A;               # read access
      $self->member_A($new_value);   # write access
-     $self->member_A=$new_value;    # write access
+     $self->member_A=$new_value;    # write access (used as lvalue)
+
+    "Class::Member::HASH" and "Class::Member::GLOB" are used if your objects
+    are HASH or GLOB references. But sometimes you do not know whether your
+    instances are GLOBs or HASHes (Consider developement of derived classes
+    where the base class is likely to be changed.). In this case use
+    "Class::Member" and the methods are defined at compile time to handle
+    each type of objects, GLOBs and HASHes. But the first access to a method
+    redefines it according to the actual object type. Thus, the first access
+    will last slightly longer but all subsequent calls are executed at the
+    same speed as "Class::Member::GLOB" or "Class::Member::HASH".
+
+    "Class::Member::Dynamic" is used if your objects can be GLOBs and HASHes
+    at the same time. The actual type is determined at each access and the
+    appropriate action is taken.
 
 AUTHOR
     Torsten Förtsch <Torsten.Foertsch@gmx.net>
 
 SEE ALSO
-    Class::Member::HASH, Class::Member::GLOB
+    Class::Member::HASH, Class::Member::GLOB, Class::Member::Dynamic
 
 COPYRIGHT
     Copyright 2003 Torsten Förtsch.

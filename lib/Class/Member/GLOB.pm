@@ -1,10 +1,7 @@
 package Class::Member::GLOB;
 
 use strict;
-use vars qw/$VERSION/;
-BEGIN {$Class::Member::only_version=1;}
-use Class::Member;
-BEGIN {$VERSION=$Class::Member::VERSION;}
+our $VERSION='1.2';
 
 use Carp 'confess';
 
