@@ -1,0 +1,8 @@
+Revision history for Perl extension Class::Member.
+
+1.0  Tue Nov 12 09:29:54 2002
+	- initial version
+
+1.1  Sat Sep 27 12:55:38 CEST 2003
+	- Carp::confess if called as class method
+
