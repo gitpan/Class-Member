@@ -1,7 +1,7 @@
 package Class::Member;
 
 use strict;
-our $VERSION='1.2a';
+our $VERSION='1.3';
 
 use Carp 'confess';
 
@@ -41,12 +41,14 @@ sub import {
 
     if( UNIVERSAL::isa( $I, 'HASH' ) ) {
       no strict 'refs';
+      no warnings 'redefine';
       *{$pack.'::'.$name}=sub:lvalue {
 	my $I=shift;
 	&{$getset_hash}( $I, $name, @_ );
       };
     } elsif( UNIVERSAL::isa( $I, 'GLOB' ) ) {
       no strict 'refs';
+      no warnings 'redefine';
       *{$pack.'::'.$name}=sub:lvalue {
 	my $I=shift;
 	&{$getset_glob}( $I, $name, @_ );
@@ -58,8 +60,19 @@ sub import {
   };
 
   foreach my $name (@_) {
-    no strict 'refs';
-    *{$pack.'::'.$name}=sub:lvalue {my $I=shift; &{$getset}( $I, $name, @_ );};
+    if( $name=~/^-(.*)/ ) {	# reserved name, aka option
+      if( $1 eq 'CLASS_MEMBERS' ) {
+	local $_;
+	no strict 'refs';
+	*{$pack.'::CLASS_MEMBERS'}=[grep {!/^-/} @_];
+      }
+    } else {
+      no strict 'refs';
+      *{$pack.'::'.$name}=sub:lvalue {
+	my $I=shift;
+	&{$getset}( $I, $name, @_ );
+      };
+    }
   }
 }
 
@@ -74,22 +87,22 @@ Class::Member - A set of modules to make the module developement easier
 =head1 SYNOPSIS
 
  package MyModule;
- use Class::Member::HASH qw/member_A member_B/;
+ use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS/;
  
  or
  
  package MyModule;
- use Class::Member::GLOB qw/member_A member_B/;
+ use Class::Member::GLOB qw/member_A member_B -CLASS_MEMBERS/;
  
  or
  
  package MyModule;
- use Class::Member qw/member_A member_B/;
+ use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
  
  or
  
  package MyModule;
- use Class::Member::Dynamic qw/member_A member_B/;
+ use Class::Member::Dynamic qw/member_A member_B -CLASS_MEMBERS/;
 
 =head1 DESCRIPTION
 
@@ -130,6 +143,35 @@ C<Class::Member::GLOB> or C<Class::Member::HASH>.
 C<Class::Member::Dynamic> is used if your objects can be GLOBs and HASHes at
 the same time. The actual type is determined at each access and the
 appropriate action is taken.
+
+In addition to member names there is (by now) one option that can be given:
+C<-CLASS_MEMBERS>. It lets the C<import()> function create an array named
+C<@CLASS_MEMBERS> in the caller's namespace that contains the names of all
+methods it defines. Thus, you can create a contructor that expects named
+parameters where each name corresponds to a class member:
+
+ use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
+ our @CLASS_MEMBERS;
+ 
+ sub new {
+   my $parent=shift;
+   my $class=ref($parent) || $parent;
+   my $I=bless {}=>$class;
+   my %o=@_;
+ 
+   if( ref($parent) ) {		# inherit first
+     foreach my $m (@CLASS_MEMBERS) {
+       $I->$m=$parent->$m;
+     }
+   }
+ 
+   # then override with named parameters
+   foreach my $m (@CLASS_MEMBERS) {
+     $I->$m=$o{$m} if( exists $o{$m} );
+   }
+ 
+   return $I;
+ }
 
 =head1 AUTHOR
 

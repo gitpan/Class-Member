@@ -1,8 +1,8 @@
 use strict;
-use Test::Simple tests=>10;
+use Test::More tests=>11;
 
 package My::New::Package;
-use Class::Member::Dynamic qw/member_A member_B/;
+use Class::Member::Dynamic qw/member_A member_B -CLASS_MEMBERS/;
 use Symbol qw/gensym/;
 
 sub new_glob {
@@ -14,6 +14,9 @@ sub new_hash {
 }
 
 package main;
+
+ok( eq_array( \@My::New::Package::CLASS_MEMBERS,
+	      [qw/member_A member_B/] ), '-CLASS_MEMBERS' );
 
 my $o=My::New::Package->new_hash;
 

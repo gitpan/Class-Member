@@ -1,8 +1,8 @@
 use strict;
-use Test::Simple tests=>12;
+use Test::More tests=>14;
 
 package My::New::Package::GLOB;
-use Class::Member qw/member_A member_B/;
+use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
 use Symbol qw/gensym/;
 
 sub new {
@@ -10,13 +10,19 @@ sub new {
 }
 
 package My::New::Package::HASH;
-use Class::Member qw/member_A member_B/;
+use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
 
 sub new {
   bless {}=>shift;
 }
 
 package main;
+
+ok( eq_array( \@My::New::Package::HASH::CLASS_MEMBERS,
+	      [qw/member_A member_B/] ), '-CLASS_MEMBERS (HASH)' );
+
+ok( eq_array( \@My::New::Package::GLOB::CLASS_MEMBERS,
+	      [qw/member_A member_B/] ), '-CLASS_MEMBERS (GLOB)' );
 
 my $o=My::New::Package::HASH->new;
 

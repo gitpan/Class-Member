@@ -23,8 +23,19 @@ sub import {
   };
 
   foreach my $name (@_) {
-    no strict 'refs';
-    *{$pack.'::'.$name}=sub:lvalue {my $I=shift; &{$getset}( $I, $name, @_ );};
+    if( $name=~/^-(.*)/ ) {	# reserved name, aka option
+      if( $1 eq 'CLASS_MEMBERS' ) {
+	local $_;
+	no strict 'refs';
+	*{$pack.'::CLASS_MEMBERS'}=[grep {!/^-/} @_];
+      }
+    } else {
+      no strict 'refs';
+      *{$pack.'::'.$name}=sub:lvalue {
+	my $I=shift;
+	&{$getset}( $I, $name, @_ );
+      };
+    }
   }
 }
 
