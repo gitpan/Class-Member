@@ -2,6 +2,7 @@ Changes
 lib/Class/Member.pm
 lib/Class/Member/GLOB.pm
 lib/Class/Member/HASH.pm
+lib/Class/Member/Dynamic.pm
 Makefile.PL
 MANIFEST
 README
@@ -9,3 +10,4 @@ mk_README.sh
 t/1.t
 t/2.t
 t/3.t
+t/4.t

@@ -1,7 +1,7 @@
 package Class::Member;
 
 use strict;
-our $VERSION='1.2';
+our $VERSION='1.2a';
 
 use Carp 'confess';
 

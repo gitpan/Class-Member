@@ -8,3 +8,6 @@ Revision history for Perl extension Class::Member.
 
 1.2  Wed Oct  1 11:12:15 CEST 2003
 	- Class::Member and Class::Member::Dynamic functionality added
+
+1.2a Wed Oct  1 12:08:44 CEST 2003
+	- I forgot to mention the new files in MANIFEST

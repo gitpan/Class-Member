@@ -1,4 +1,4 @@
-package Class::Member::GLOB;
+package Class::Member::Dynamic;
 
 use strict;
 our $VERSION='1.2a';
@@ -8,18 +8,29 @@ use Carp 'confess';
 sub import {
   my $pack=shift;
   ($pack)=caller;
+  my $dummy;
 
   my $getset=sub : lvalue {
     my $I=shift;
     my $what=shift;
-    unless( UNIVERSAL::isa( $I, 'GLOB' ) ) {
+    my $rc=\$dummy;
+
+    if( UNIVERSAL::isa( $I, 'HASH' ) ) {
+      $what=$pack.'::'.$what;
+      if( $#_>=0 ) {
+	$I->{$what}=shift;
+      }
+      $rc=\$I->{$what};
+    } elsif( UNIVERSAL::isa( $I, 'GLOB' ) ) {
+      $what=$pack.'::'.$what;
+      if( $#_>=0 ) {
+	${*$I}{$what}=shift;
+      }
+      $rc=\${*$I}{$what};
+    } else {
       confess "$pack\::$what must be called as instance method\n";
     }
-    $what=$pack.'::'.$what;
-    if( $#_>=0 ) {
-      ${*$I}{$what}=shift;
-    }
-    ${*$I}{$what};
+    $$rc;
   };
 
   foreach my $name (@_) {
@@ -34,12 +45,12 @@ __END__
 
 =head1 NAME
 
-Class::Member::GLOB - A module to make the module developement easier
+Class::Member::Dynamic - A module to make the module developement easier
 
 =head1 SYNOPSIS
 
  package MyModule;
- use Class::Member::GLOB qw/member_A member_B/;
+ use Class::Member::Dynamic qw/member_A member_B/;
 
 =head1 DESCRIPTION
 
