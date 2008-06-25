@@ -3,7 +3,6 @@ use Test::More tests=>7;
 
 package My::New::Package;
 use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS/;
-use Symbol qw/gensym/;
 
 sub new {
   bless {}=>shift;

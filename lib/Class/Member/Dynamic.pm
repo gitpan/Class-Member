@@ -1,7 +1,7 @@
 package Class::Member::Dynamic;
 
 use strict;
-our $VERSION='1.3';
+our $VERSION='1.5';
 
 use Carp 'confess';
 
@@ -69,11 +69,11 @@ See L<Class::Member>.
 
 =head1 AUTHOR
 
-Torsten Förtsch E<lt>Torsten.Foertsch@gmx.netE<gt>
+Torsten Foertsch E<lt>Torsten.Foertsch@gmx.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2003 Torsten Förtsch.
+Copyright 2003-2008 Torsten Foertsch.
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

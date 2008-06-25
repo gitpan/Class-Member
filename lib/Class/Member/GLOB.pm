@@ -1,9 +1,10 @@
 package Class::Member::GLOB;
 
 use strict;
-our $VERSION='1.2a';
+our $VERSION='1.5';
 
 use Carp 'confess';
+use IO::Handle;
 
 sub import {
   my $pack=shift;
@@ -22,12 +23,55 @@ sub import {
     ${*$I}{$what};
   };
 
+  my $new=sub {
+    my $parent=shift;
+    my $class=ref($parent) || $parent;
+    my $I=bless IO::Handle->new=>$class;
+    my %o=@_;
+    our (@CLASS_MEMBERS, $INIT);
+    local *CLASS_MEMBERS;
+    local *INIT;
+    {
+      no strict 'refs';
+      *CLASS_MEMBERS=\@{$pack.'::CLASS_MEMBERS'};
+      *INIT=\${$pack.'::I N I T'};
+    }
+
+    if( ref($parent) ) {		# inherit first
+      foreach my $m (@CLASS_MEMBERS) {
+	$I->$m=$parent->$m;
+      }
+    }
+
+    # then override with named parameters
+    foreach my $m (@CLASS_MEMBERS) {
+      $I->$m=$o{$m} if( exists $o{$m} );
+    }
+
+    $I->$INIT if( defined $INIT );
+
+    return $I;
+  };
+
   foreach my $name (@_) {
     if( $name=~/^-(.*)/ ) {	# reserved name, aka option
-      if( $1 eq 'CLASS_MEMBERS' ) {
+      my $o=$1;
+      if( $o eq 'CLASS_MEMBERS' ) {
 	local $_;
 	no strict 'refs';
 	*{$pack.'::CLASS_MEMBERS'}=[grep {!/^-/} @_];
+      } elsif( $o=~/^NEW=(.+)/ ) {
+	no strict 'refs';
+	*{$pack.'::'.$1}=$new;
+      } elsif( $o eq 'NEW' ) {
+	no strict 'refs';
+	*{$pack.'::new'}=$new;
+      } elsif( $o=~/^INIT=(.+)/ ) {
+	no strict 'refs';
+	*{$pack.'::I N I T'}=\"$1";
+      } elsif( $o eq 'INIT' ) {
+	no strict 'refs';
+	*{$pack.'::I N I T'}=\"init";
       }
     } else {
       no strict 'refs';
@@ -58,11 +102,11 @@ See L<Class::Member>.
 
 =head1 AUTHOR
 
-Torsten Förtsch E<lt>Torsten.Foertsch@gmx.netE<gt>
+Torsten Foertsch E<lt>Torsten.Foertsch@gmx.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2003 Torsten Förtsch.
+Copyright 2003-2008 Torsten Foertsch.
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

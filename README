@@ -3,22 +3,30 @@ NAME
 
 SYNOPSIS
      package MyModule;
-     use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS/;
- 
-     or
- 
-     package MyModule;
-     use Class::Member::GLOB qw/member_A member_B -CLASS_MEMBERS/;
- 
-     or
- 
-     package MyModule;
+     use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS
+                                -NEW=new -INIT=init/;
+     
+ or
+     
+ package MyModule;
+     use Class::Member::GLOB qw/member_A member_B -CLASS_MEMBERS
+                                -NEW=new -INIT=init/;
+     
+ or
+     
+ package MyModule;
      use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
- 
-     or
- 
-     package MyModule;
+     
+ or
+     
+ package MyModule;
      use Class::Member::Dynamic qw/member_A member_B -CLASS_MEMBERS/;
+
+INSTALLATION
+     perl Makefile.PL
+     make
+     make test
+     make install
 
 DESCRIPTION
     Perl class instances are mostly blessed HASHes or GLOBs and store member
@@ -67,45 +75,54 @@ DESCRIPTION
 
      use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
      our @CLASS_MEMBERS;
- 
-     sub new {
+     
+ sub new {
        my $parent=shift;
        my $class=ref($parent) || $parent;
        my $I=bless {}=>$class;
        my %o=@_;
- 
-       if( ref($parent) ) {         # inherit first
+     
+   if( ref($parent) ) {         # inherit first
          foreach my $m (@CLASS_MEMBERS) {
            $I->$m=$parent->$m;
          }
        }
- 
-       # then override with named parameters
+     
+   # then override with named parameters
        foreach my $m (@CLASS_MEMBERS) {
          $I->$m=$o{$m} if( exists $o{$m} );
        }
- 
-       return $I;
+     
+   $I->init;
+     
+   return $I;
      }
 
+    Further, if you use one of "Class::Member::HASH" or
+    "Class::Member::GLOB" a constructor method can be created automatically.
+    Just add "-NEW" or "-NEW=name" to the "use()" call. The first form
+    creates a "new()" method that is implemented as shown except of the
+    "$I->init" call. The 2nd form can be used if your constructor must not
+    be named "new".
+
+    The "$I->init" call is added by specifying the "-INIT" or "-INIT=name"
+    option. If given a new symbol "${I N I T}" is created in the caller's
+    namespace to hold the name of the "init()" method. Yes, the symbol name
+    does contain spaces to make it harder to change by chance. You don't
+    normally have to care about it. Again, the "-INIT=name" form is used if
+    your "init()" method is not named "init".
+
+    The "init()" method itself is provided by you.
+
 AUTHOR
-    Torsten Förtsch <Torsten.Foertsch@gmx.net>
+    Torsten Foertsch <Torsten.Foertsch@gmx.net>
 
 SEE ALSO
     Class::Member::HASH, Class::Member::GLOB, Class::Member::Dynamic
 
 COPYRIGHT
-    Copyright 2003 Torsten Förtsch.
+    Copyright 2003-2008 Torsten Foertsch.
 
     This library is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
-
-INSTALLATION
-     perl Makefile.PL
-     make
-     make test
-     make install
-
-DEPENDENCIES
-    None.
 

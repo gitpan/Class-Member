@@ -1,7 +1,8 @@
 package Class::Member;
 
+use 5.008_000;
 use strict;
-our $VERSION='1.3';
+our $VERSION='1.5';
 
 use Carp 'confess';
 
@@ -87,12 +88,14 @@ Class::Member - A set of modules to make the module developement easier
 =head1 SYNOPSIS
 
  package MyModule;
- use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS/;
+ use Class::Member::HASH qw/member_A member_B -CLASS_MEMBERS
+                            -NEW=new -INIT=init/;
  
  or
  
  package MyModule;
- use Class::Member::GLOB qw/member_A member_B -CLASS_MEMBERS/;
+ use Class::Member::GLOB qw/member_A member_B -CLASS_MEMBERS
+                            -NEW=new -INIT=init/;
  
  or
  
@@ -170,12 +173,29 @@ parameters where each name corresponds to a class member:
      $I->$m=$o{$m} if( exists $o{$m} );
    }
  
+   $I->init;
+ 
    return $I;
  }
 
+Further, if you use one of C<Class::Member::HASH> or C<Class::Member::GLOB> a
+constructor method can be created automatically. Just add C<-NEW> or
+C<-NEW=name> to the C<use()> call. The first form creates a C<new()> method
+that is implemented as shown except of the C<$I-E<gt>init> call. The 2nd form
+can be used if your constructor must not be named C<new>.
+
+The C<$I-E<gt>init> call is added by specifying the C<-INIT> or C<-INIT=name>
+option. If given a new symbol C<${I N I T}> is created in the caller's
+namespace to hold the name of the C<init()> method. Yes, the symbol name does
+contain spaces to make it harder to change by chance. You don't normally have
+to care about it. Again, the C<-INIT=name> form is used if your C<init()>
+method is not named C<init>.
+
+The C<init()> method itself is provided by you.
+
 =head1 AUTHOR
 
-Torsten Förtsch E<lt>Torsten.Foertsch@gmx.netE<gt>
+Torsten Foertsch E<lt>Torsten.Foertsch@gmx.netE<gt>
 
 =head1 SEE ALSO
 
@@ -183,7 +203,7 @@ L<Class::Member::HASH>, L<Class::Member::GLOB>, L<Class::Member::Dynamic>
 
 =head1 COPYRIGHT
 
-Copyright 2003 Torsten Förtsch.
+Copyright 2003-2008 Torsten Foertsch.
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

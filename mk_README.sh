@@ -1,11 +1,6 @@
 #!/bin/bash
 
-(perldoc -tU ./lib/Class/Member.pm
- perldoc -tU $0
-) >README
-
-exit 0
-
+perl -pe '/^=head1 DESCRIPTION/ and print <STDIN>' lib/Class/Member.pm >README.pod <<EOF
 =head1 INSTALLATION
 
  perl Makefile.PL
@@ -13,8 +8,7 @@ exit 0
  make test
  make install
 
-=head1 DEPENDENCIES
+EOF
 
-None.
-
-=cut
+perldoc -tU README.pod >README
+rm README.pod
