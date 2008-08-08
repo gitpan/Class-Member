@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Member.
 
+1.6 Fri Aug  8 13:23:01 CEST 2008
+	- provide a way for the contructor to work for derived classes as well
+
 1.5  Wed Jun 25 12:25:19 CEST 2008
 	- "use 5.008_000" instead of "use 5.8.0" to silence a warning
 	- new() method added to ::HASH and ::GLOB

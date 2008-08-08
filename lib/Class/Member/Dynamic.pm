@@ -1,7 +1,7 @@
 package Class::Member::Dynamic;
 
 use strict;
-our $VERSION='1.5';
+our $VERSION='1.6';
 
 use Carp 'confess';
 

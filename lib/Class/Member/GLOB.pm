@@ -1,10 +1,22 @@
 package Class::Member::GLOB;
 
 use strict;
-our $VERSION='1.5';
+our $VERSION='1.6';
 
 use Carp 'confess';
 use IO::Handle;
+
+my $get_class_members;
+$get_class_members=sub {
+  my $pack=$_[0];
+  no strict 'refs';
+  my %cm;
+  @cm{@{$pack.'::CLASS_MEMBERS'}}=();
+  foreach my $p (@{$pack.'::ISA'}) {
+    @cm{$get_class_members->($p)}=();
+  }
+  return keys %cm;
+};
 
 sub import {
   my $pack=shift;
@@ -26,16 +38,10 @@ sub import {
   my $new=sub {
     my $parent=shift;
     my $class=ref($parent) || $parent;
+
     my $I=bless IO::Handle->new=>$class;
     my %o=@_;
-    our (@CLASS_MEMBERS, $INIT);
-    local *CLASS_MEMBERS;
-    local *INIT;
-    {
-      no strict 'refs';
-      *CLASS_MEMBERS=\@{$pack.'::CLASS_MEMBERS'};
-      *INIT=\${$pack.'::I N I T'};
-    }
+    my @CLASS_MEMBERS=$get_class_members->($class);
 
     if( ref($parent) ) {		# inherit first
       foreach my $m (@CLASS_MEMBERS) {
@@ -48,7 +54,11 @@ sub import {
       $I->$m=$o{$m} if( exists $o{$m} );
     }
 
-    $I->$INIT if( defined $INIT );
+    my $init=$I->can('I N I T');
+    if( $init ) {
+      $init=$init->();
+      $I->$init;
+    }
 
     return $I;
   };
@@ -68,10 +78,11 @@ sub import {
 	*{$pack.'::new'}=$new;
       } elsif( $o=~/^INIT=(.+)/ ) {
 	no strict 'refs';
-	*{$pack.'::I N I T'}=\"$1";
+	my $init="$1";
+	*{$pack.'::I N I T'}=sub(){$init};
       } elsif( $o eq 'INIT' ) {
 	no strict 'refs';
-	*{$pack.'::I N I T'}=\"init";
+	*{$pack.'::I N I T'}=sub(){"init"};
       }
     } else {
       no strict 'refs';

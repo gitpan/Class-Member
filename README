@@ -67,11 +67,11 @@ DESCRIPTION
     at the same time. The actual type is determined at each access and the
     appropriate action is taken.
 
-    In addition to member names there is (by now) one option that can be
-    given: "-CLASS_MEMBERS". It lets the "import()" function create an array
-    named @CLASS_MEMBERS in the caller's namespace that contains the names
-    of all methods it defines. Thus, you can create a contructor that
-    expects named parameters where each name corresponds to a class member:
+    In addition to member names there are a few options that can be given:
+    "-CLASS_MEMBERS". It lets the "import()" function create an array named
+    @CLASS_MEMBERS in the caller's namespace that contains the names of all
+    methods it defines. Thus, you can create a contructor that expects named
+    parameters where each name corresponds to a class member:
 
      use Class::Member qw/member_A member_B -CLASS_MEMBERS/;
      our @CLASS_MEMBERS;
@@ -105,14 +105,42 @@ DESCRIPTION
     "$I->init" call. The 2nd form can be used if your constructor must not
     be named "new".
 
+    What happens if one "Class::Member" based class inherits the constructor
+    from another "Class::Member" based class? In this case the inherited
+    contructor works for the @CLASS_MEMBERS of the base class as well as the
+    derived class. For example:
+
+     package Base;
+     use Class::Member::HASH qw/-NEW -CLASS_MEMBERS el1 el2/;
+
+     package Inherited;
+     use Class::Member::HASH qw/-CLASS_MEMBERS el3/;
+     use base qw/Base/;
+
+    Now "Inherited-"new> calls the constructor of the base class but one can
+    pass "el1", "el2" as well as "el3" parameters.
+
     The "$I->init" call is added by specifying the "-INIT" or "-INIT=name"
-    option. If given a new symbol "${I N I T}" is created in the caller's
+    option. If given a new function "&{I N I T}" is created in the caller's
     namespace to hold the name of the "init()" method. Yes, the symbol name
     does contain spaces to make it harder to change by chance. You don't
     normally have to care about it. Again, the "-INIT=name" form is used if
     your "init()" method is not named "init".
 
     The "init()" method itself is provided by you.
+
+    More detailed here is how the initializer is called:
+
+     my $init=$self->can('I N I T');
+     if( $init ) {
+       $init=$init->();
+       $self->$init;
+     }
+
+    That means the constructor looks if the class itself or one of the base
+    classes provides a "I N I T" method (the name includes spaces between
+    each pair of characters). If so it calls that method to fetch the
+    initializer name. The last step calls the initializer itself.
 
 AUTHOR
     Torsten Foertsch <Torsten.Foertsch@gmx.net>

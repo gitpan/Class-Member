@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Class-Member
-version:             1.5
+version:             1.6
 abstract:            A set of modules to make the module developement easier
 license:             ~
 author:              

@@ -2,7 +2,7 @@ package Class::Member;
 
 use 5.008_000;
 use strict;
-our $VERSION='1.5';
+our $VERSION='1.6';
 
 use Carp 'confess';
 
@@ -147,7 +147,7 @@ C<Class::Member::Dynamic> is used if your objects can be GLOBs and HASHes at
 the same time. The actual type is determined at each access and the
 appropriate action is taken.
 
-In addition to member names there is (by now) one option that can be given:
+In addition to member names there are a few options that can be given:
 C<-CLASS_MEMBERS>. It lets the C<import()> function create an array named
 C<@CLASS_MEMBERS> in the caller's namespace that contains the names of all
 methods it defines. Thus, you can create a contructor that expects named
@@ -184,14 +184,42 @@ C<-NEW=name> to the C<use()> call. The first form creates a C<new()> method
 that is implemented as shown except of the C<$I-E<gt>init> call. The 2nd form
 can be used if your constructor must not be named C<new>.
 
+What happens if one C<Class::Member> based class inherits the constructor
+from another C<Class::Member> based class? In this case the inherited
+contructor works for the C<@CLASS_MEMBERS> of the base class as well as the
+derived class. For example:
+
+ package Base;
+ use Class::Member::HASH qw/-NEW -CLASS_MEMBERS el1 el2/;
+
+ package Inherited;
+ use Class::Member::HASH qw/-CLASS_MEMBERS el3/;
+ use base qw/Base/;
+
+Now C<Inherited->new> calls the constructor of the base class but one can
+pass C<el1>, C<el2> as well as C<el3> parameters.
+
 The C<$I-E<gt>init> call is added by specifying the C<-INIT> or C<-INIT=name>
-option. If given a new symbol C<${I N I T}> is created in the caller's
+option. If given a new function C<&{I N I T}> is created in the caller's
 namespace to hold the name of the C<init()> method. Yes, the symbol name does
 contain spaces to make it harder to change by chance. You don't normally have
 to care about it. Again, the C<-INIT=name> form is used if your C<init()>
 method is not named C<init>.
 
 The C<init()> method itself is provided by you.
+
+More detailed here is how the initializer is called:
+
+ my $init=$self->can('I N I T');
+ if( $init ) {
+   $init=$init->();
+   $self->$init;
+ }
+
+That means the constructor looks if the class itself or one of the base
+classes provides a C<I N I T> method (the name includes spaces between each
+pair of characters). If so it calls that method to fetch the initializer name.
+The last step calls the initializer itself.
 
 =head1 AUTHOR
 
